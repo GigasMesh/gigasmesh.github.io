@@ -1,23 +1,26 @@
+const canvas = document.querySelector("#canvas");
+const ctx = canvas.getContext("2d");
 const clearBtn = document.querySelector("#btn-clear")
 const confirmBtn = document.querySelector("#btn-confirm")
-const zoomBtn = document.querySelector(".zoom")
-const colorBtn = document.querySelector(".color")
-const colorPicker = document.querySelector('.colorPicker')
+const size = 10;
 
-var radio = document.querySelector('input[type=radio]:checked');
-var size = 10;
+let radio = document.querySelector('input[type=radio]:checked');
 
 
 window.addEventListener('load',() => {
-   const canvas = document.querySelector("#canvas");
-   const ctx = canvas.getContext("2d");
+
+   confirmBtn.addEventListener('click',confirmOperation);
+   clearBtn.addEventListener('click',clearCanvas);
+   canvas.addEventListener("click", handleFunction);
 
    var points = [];
+   var markupPoints = [];
+
    ctx.canvas.width  = 16*size;
    ctx.canvas.height = 9*size;
 
    function  getMousePos(canvas, evt) {
-      var rect = canvas.getBoundingClientRect(), // abs. size of element
+      const rect = canvas.getBoundingClientRect(), // abs. size of element
           scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for X
           scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for Y
 
@@ -31,14 +34,12 @@ window.addEventListener('load',() => {
       var mousePos = getMousePos(canvas,e);
 
       pixel(mousePos.x,mousePos.y)
-      return;
    }
 
    function eraser(e) {
       var mousePos = getMousePos(canvas,e);
 
       ctx.clearRect(Math.floor(mousePos.x)-5, Math.floor(mousePos.y)-5, 10, 10)
-      return;
    }
 
    function line(x0,y0,x1,y1){
@@ -56,72 +57,59 @@ window.addEventListener('load',() => {
          if (e2 > -dy) { error -= dy; x0  += sx; }
          if (e2 < dx) { error += dx; y0  += sy; }
       }
-      return;
    }
-
 
    function drawLine(e) {
       if (points.length < 1) {
          points.push(getMousePos(canvas, e));
          drawInitialPixel(points[0].x, points[0].y)
-         return;
       }
       else {
          points.push(getMousePos(canvas, e));
          line(Math.floor(points[0].x), Math.floor(points[0].y), Math.floor(points[1].x), Math.floor(points[1].y));
          points = [];
-         return;
       }
    }
   
    function addPoints(e){
-      point = getMousePos(canvas, e)
+      let point = getMousePos(canvas, e)
       drawInitialPixel(point.x, point.y)
       points.push(point)
-
    }
-   function polygon(e){    
-      for(var i = 0; i < points.length; i++) {
+
+   function polygon(){
+      for(let i = 0; i < points.length; i++) {
          if (i === (points.length-1)){
-            console.log('entrou no if')
             point0 = points[i]
             point1 = points[0]   
          }
          else{
             var point0 = points[i]
             var point1 = points[i+1]
-         }  
-         console.log(point0.x, point0.y, point1.x, point1.y) 
+         }
          line(Math.floor(point0.x), Math.floor(point0.y), Math.floor(point1.x),Math.floor(point1.y))
-
-       } 
+       }
        points = []
    }
 
-   function pixel(x,y){
+   function pixel(x,y,color='black'){
+      ctx.fillStyle = color
       ctx.fillRect(Math.floor(x), Math.floor(y), 1, 1)
-      return;
+      ctx.fillStyle = 'black'
    }
 
    function drawInitialPixel(x,y){
-      ctx.fillStyle = 'gray';
-      ctx.fillRect(Math.floor(x), Math.floor(y), 1, 1)
-      ctx.fillStyle = 'black';
-      return;
+      pixel(x,y,'gray')
    }
 
    function deletePixel(x,y){
-      ctx.clearRect(Math.floor(x), Math.floor(y), 1, 1)
-      return;
+      ctx.clearRect(Math.floor(x), Math.floor(y), 2, 2)
    }
-
-
 
    function drawCircle(e){
       if (points.length < 1) {
          points.push(getMousePos(canvas, e));
          drawInitialPixel(points[0].x, points[0].y)
-         return;
       }
 
       else {
@@ -158,9 +146,57 @@ window.addEventListener('load',() => {
                radiusError += 2 * (y - x + 1);
             }
          }
-         i = 0;
          points = []
-         return;
+      }
+   }
+
+   function drawCurve(e){
+      if (markupPoints.length < 2) {
+         let point = getMousePos(canvas, e);
+         markupPoints.push(point);
+         pixel(point.x, point.y,'red')
+      }
+      else {
+         addPoints(e)
+      }
+   }
+
+   function curve(){
+      points.push(markupPoints[1]);
+      for (const point in points) {
+         deletePixel(points[point].x,points[point].y)
+      }
+      const numLines = points.length / 2 + 2;
+      for (let i = 1; i <= numLines; i++) {
+         const t = (1.0 / numLines) * i;
+         let a = bezierPoint(t);
+         line(Math.floor(markupPoints[0].x), Math.floor(markupPoints[0].y), Math.floor(a.x),Math.floor(a.y));
+         markupPoints[0] = a;
+      }
+      markupPoints = [];
+      points = [];
+   }
+
+   function bezierPoint(t){
+      const degree = points.length - 1;
+      for (let r = 1; r <= degree; r++) {
+         for (let i = 0; i <= degree - r; i++) {
+            const firstMultiplication = math.multiply([points[i].x,points[i].y], (1.0 - t));
+            const secondMultiplication = math.multiply([points[i+1].x,points[i+1].y], t);
+
+            let add = math.add(firstMultiplication, secondMultiplication);
+            points[i] = {x: add[0], y:add[1]}
+         }
+      }
+      return points[0]
+   }
+
+   function confirmOperation(e){
+      if (radio.value == 'Polygon') {
+         polygon(e)
+      }
+      else if(radio.value == 'Curve') {
+         curve(e)
       }
    }
 
@@ -182,22 +218,14 @@ window.addEventListener('load',() => {
       else if (radio.value == 'Polygon') {
          canvas.addEventListener("click",addPoints(e))
       }
-   }
-
-   canvas.addEventListener("click", handleFunction);
-
-   function selectAlgotithm(e){
-      if (radio.value === 'Polygon') {
-         canvas.addEventListener("click", polygon(e));
-      }   
+      else if (radio.value == 'Curve') {
+         canvas.addEventListener("click", drawCurve(e))
+      }
    }
    function clearCanvas(e){
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       points = []
    }
-   confirmBtn.addEventListener('click',selectAlgotithm);
-   clearBtn.addEventListener('click',clearCanvas);
-
 });
 
 
