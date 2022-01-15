@@ -1,4 +1,5 @@
 const clearBtn = document.querySelector("#btn-clear")
+const confirmBtn = document.querySelector("#btn-confirm")
 const zoomBtn = document.querySelector(".zoom")
 const colorBtn = document.querySelector(".color")
 const colorPicker = document.querySelector('.colorPicker')
@@ -11,7 +12,7 @@ window.addEventListener('load',() => {
    const canvas = document.querySelector("#canvas");
    const ctx = canvas.getContext("2d");
 
-
+   var points = [];
    ctx.canvas.width  = 16*size;
    ctx.canvas.height = 9*size;
 
@@ -27,16 +28,16 @@ window.addEventListener('load',() => {
    }
 
    function drawPixel(e){
-      var mousePositon = getMousePos(canvas,e);
+      var mousePos = getMousePos(canvas,e);
 
-      pixel(mousePositon.x,mousePositon.y)
+      pixel(mousePos.x,mousePos.y)
       return;
    }
 
    function eraser(e) {
-      var mousePositon = getMousePos(canvas,e);
+      var mousePos = getMousePos(canvas,e);
 
-      ctx.clearRect(Math.floor(mousePositon.x)-5, Math.floor(mousePositon.y)-5, 10, 10)
+      ctx.clearRect(Math.floor(mousePos.x)-5, Math.floor(mousePos.y)-5, 10, 10)
       return;
    }
 
@@ -58,23 +59,43 @@ window.addEventListener('load',() => {
       return;
    }
 
-   var count = 0
-   var firstPoint;
-   var secondPoint;
 
    function drawLine(e) {
-      if (count == 0) {
-         firstPoint = getMousePos(canvas, e);
-         drawGhostPixel(firstPoint.x, firstPoint.y)
-         count = 1;
+      if (points.length < 1) {
+         points.push(getMousePos(canvas, e));
+         drawInitialPixel(points[0].x, points[0].y)
          return;
       }
-      if (count == 1) {
-         secondPoint = getMousePos(canvas, e);
-         line(Math.floor(firstPoint.x), Math.floor(firstPoint.y), Math.floor(secondPoint.x), Math.floor(secondPoint.y));
-         count = 0;
+      else {
+         points.push(getMousePos(canvas, e));
+         line(Math.floor(points[0].x), Math.floor(points[0].y), Math.floor(points[1].x), Math.floor(points[1].y));
+         points = [];
          return;
       }
+   }
+  
+   function addPoints(e){
+      point = getMousePos(canvas, e)
+      drawInitialPixel(point.x, point.y)
+      points.push(point)
+
+   }
+   function polygon(e){    
+      for(var i = 0; i < points.length; i++) {
+         if (i === (points.length-1)){
+            console.log('entrou no if')
+            point0 = points[i]
+            point1 = points[0]   
+         }
+         else{
+            var point0 = points[i]
+            var point1 = points[i+1]
+         }  
+         console.log(point0.x, point0.y, point1.x, point1.y) 
+         line(Math.floor(point0.x), Math.floor(point0.y), Math.floor(point1.x),Math.floor(point1.y))
+
+       } 
+       points = []
    }
 
    function pixel(x,y){
@@ -82,7 +103,7 @@ window.addEventListener('load',() => {
       return;
    }
 
-   function drawGhostPixel(x,y){
+   function drawInitialPixel(x,y){
       ctx.fillStyle = 'gray';
       ctx.fillRect(Math.floor(x), Math.floor(y), 1, 1)
       ctx.fillStyle = 'black';
@@ -97,24 +118,22 @@ window.addEventListener('load',() => {
 
 
    function drawCircle(e){
-      if (count == 0){
-         firstPoint = getMousePos(canvas, e);
-         drawGhostPixel(firstPoint.x, firstPoint.y)
-
-         count = 1
+      if (points.length < 1) {
+         points.push(getMousePos(canvas, e));
+         drawInitialPixel(points[0].x, points[0].y)
          return;
       }
 
-      if (count == 1) {
-         deletePixel(firstPoint.x, firstPoint.y)
-         secondPoint = getMousePos(canvas, e);
-         var a = Math.abs(firstPoint.x - secondPoint.x);
-         var b = Math.abs(firstPoint.y - secondPoint.y);
+      else {
+         deletePixel(points[0].x, points[0].y)
+         points.push(getMousePos(canvas, e));
+         var a = Math.abs(points[0].x - points[1].x);
+         var b = Math.abs(points[0].y - points[1].y);
          var radius = Math.sqrt(a * a + b * b);
          radius = Math.round(radius);
 
-         var x0 = firstPoint.x;
-         var y0 = firstPoint.y;
+         var x0 = points[0].x;
+         var y0 = points[1].y;
 
          var x = radius;
          var y = 0;
@@ -139,7 +158,8 @@ window.addEventListener('load',() => {
                radiusError += 2 * (y - x + 1);
             }
          }
-         count = 0;
+         i = 0;
+         points = []
          return;
       }
    }
@@ -159,14 +179,23 @@ window.addEventListener('load',() => {
       else if (radio.value == 'Eraser') {
          canvas.addEventListener("click", eraser(e));
       }
+      else if (radio.value == 'Polygon') {
+         canvas.addEventListener("click",addPoints(e))
+      }
    }
 
    canvas.addEventListener("click", handleFunction);
 
+   function selectAlgotithm(e){
+      if (radio.value === 'Polygon') {
+         canvas.addEventListener("click", polygon(e));
+      }   
+   }
    function clearCanvas(e){
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      points = []
    }
-
+   confirmBtn.addEventListener('click',selectAlgotithm);
    clearBtn.addEventListener('click',clearCanvas);
 
 });
