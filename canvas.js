@@ -15,6 +15,11 @@ window.addEventListener('load',() => {
 
    var points = [];
    var markupPoints = [];
+   var lastPolygon = Object(); //salva o ultimo poligono e suas arestas
+   lastPolygon.edges = [];
+   lastPolygon.extremities;
+   lastPolygon.vertices = [];
+   var i = 0
 
    ctx.canvas.width  = 16*size;
    ctx.canvas.height = 9*size;
@@ -48,11 +53,21 @@ window.addEventListener('load',() => {
       var sx = (x0 < x1) ? 1 : -1;
       var sy = (y0 < y1) ? 1 : -1;
       var error = dx - dy;
-
+      var edge = []
       while(true) {
          ctx.fillRect(x0, y0, 1,1);
+         if ((radio.value == 'Polygon') || (radio.value == 'Replace')){
+            var point = new Object()
+            point.x = x0
+            point.y = y0
+            edge.unshift(point) 
+         }
 
-         if ((x0 === x1) && (y0 === y1)) break;
+         if ((x0 === x1) && (y0 === y1)){
+            lastPolygon.edges.push(edge)
+            edge = [];
+            break;
+         }
          var e2 = 2*error;
          if (e2 > -dy) { error -= dy; x0  += sx; }
          if (e2 < dx) { error += dx; y0  += sy; }
@@ -77,7 +92,40 @@ window.addEventListener('load',() => {
       points.push(point)
    }
 
+   function selectExtremities(e){
+      for(let i = 0; i < points.length; i++){
+         if (i == 0){
+            maxX = points[i].x
+            maxY = points[i].y
+            minX = points[i].x
+            minY = points[i].y
+         }
+         else{
+            if (points[i].x > maxX){
+               maxX = points[i].x
+            }
+            if (points[i].y > maxY){
+               maxY = points[i].y
+            }
+            if (points[i].x < minX){
+               minX = points[i].x
+            }
+            if (points[i].y < minY){
+               minY = points[i].y
+            }
+         }
+      }
+      lastPolygon.extremities.push(Math.floor(maxX),Math.floor(maxY),Math.floor(minX),Math.floor(minY))
+   }
+
+   function newPolygon(){
+      lastPolygon.edges = [];
+      lastPolygon.extremities = [];
+      lastPolygon.vertices = [];
+   }
+   
    function polygon(){
+      newPolygon()
       for(let i = 0; i < points.length; i++) {
          if (i === (points.length-1)){
             point0 = points[i]
@@ -89,7 +137,77 @@ window.addEventListener('load',() => {
          }
          line(Math.floor(point0.x), Math.floor(point0.y), Math.floor(point1.x),Math.floor(point1.y))
        }
+       selectExtremities()
+       lastPolygon.vertices = points
+       console.log(lastPolygon)
        points = []
+       i = 1
+   }
+
+   function verifyColision(pixel){
+      for(let i = 0; i < lastPolygon.edges.length; i++){
+         for(let j = 0; j < lastPolygon.edges[i].length; j++){
+            if((pixel.x == lastPolygon.edges[i][j].x) && (pixel.y == lastPolygon.edges[i][j].y)){
+               console.log('entrou no if')
+               return true;
+            }
+         }
+      }
+      return false;
+   }
+
+   function scanLine(e){
+      var inEdge = false
+      if (i == 0){
+         return;
+      }
+      var colision = -1
+      var maxX = lastPolygon.extremities[0];
+      var maxY = lastPolygon.extremities[1];
+      var minX = lastPolygon.extremities[2];
+      var minY = lastPolygon.extremities[3];
+      for(let i = minY; i < maxY; i++){
+         for(let j = minX; j < maxX; j++){
+            var point = Object()
+            point.y = i 
+            point.x = j
+            if(verifyColision(point)){
+               if (inEdge){
+                  continue;
+               }
+               colision = colision * -1
+               inEdge = true
+               continue;
+            }
+            else {
+               inEdge = false
+            }
+            if ((colision == 1) && (inEdge == false)){
+               pixel(point.x,point.y,'red')
+            }             
+         }
+         inEdge = false
+         colision = -1
+      }
+   }
+   
+   function deletePolygon(){
+      for(let i = 0; i < lastPolygon.edges.length; i++){
+         for(let j = 0; j < lastPolygon.edges[i].length; j++){
+            pixel(lastPolygon.edges[i][j].x,lastPolygon.edges[i][j].y,'white')
+         }
+      }
+   }
+   
+   function replace(e){
+      deletePolygon()
+      for(let i = 0; i < lastPolygon.vertices.length; i++){
+         lastPolygon.vertices[i].x += -2
+         lastPolygon.vertices[i].y += -2
+      }
+      points = lastPolygon.vertices
+      polygon()
+
    }
 
    function pixel(x,y,color='black'){
@@ -107,21 +225,22 @@ window.addEventListener('load',() => {
    }
 
    function drawCircle(e){
-      if (points.length < 1) {
-         points.push(getMousePos(canvas, e));
-         drawInitialPixel(points[0].x, points[0].y)
+      newPolygon()
+      if (markupPoints.length < 1) {
+         markupPoints.push(getMousePos(canvas, e));
+         drawInitialPixel(markupPoints[0].x, markupPoints[0].y)
       }
 
       else {
-         deletePixel(points[0].x, points[0].y)
-         points.push(getMousePos(canvas, e));
-         var a = Math.abs(points[0].x - points[1].x);
-         var b = Math.abs(points[0].y - points[1].y);
+         deletePixel(markupPoints[0].x, markupPoints[0].y)
+         markupPoints.push(getMousePos(canvas, e));
+         var a = Math.abs(markupPoints[0].x - markupPoints[1].x);
+         var b = Math.abs(markupPoints[0].y - markupPoints[1].y);
          var radius = Math.sqrt(a * a + b * b);
          radius = Math.round(radius);
 
-         var x0 = points[0].x;
-         var y0 = points[1].y;
+         var x0 = markupPoints[0].x;
+         var y0 = markupPoints[1].y;
 
          var x = radius;
          var y = 0;
@@ -146,7 +265,7 @@ window.addEventListener('load',() => {
                radiusError += 2 * (y - x + 1);
             }
          }
-         points = []
+         markupPoints = []
       }
    }
 
@@ -220,6 +339,15 @@ window.addEventListener('load',() => {
       }
       else if (radio.value == 'Curve') {
          canvas.addEventListener("click", drawCurve(e))
+      }
+      else if (radio.value == 'Scanline') {
+         canvas.addEventListener("click", scanLine(e))
+      }
+      else if (radio.value == 'Replace') {
+         canvas.addEventListener("click", replace(e))
+      }
+      else if (radio.value == 'Resize') {
+         canvas.addEventListener("click", resize(e))
       }
    }
    function clearCanvas(e){
