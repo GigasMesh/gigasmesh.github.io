@@ -37,7 +37,6 @@ window.addEventListener('load',() => {
 
    function drawPixel(e){
       var mousePos = getMousePos(canvas,e);
-
       pixel(mousePos.x,mousePos.y)
    }
 
@@ -310,6 +309,31 @@ window.addEventListener('load',() => {
       return points[0]
    }
 
+   function isPixelPainted(x, y){
+      let data = ctx.getImageData(x, y, 1, 1).data
+      if (data[3] !== 0) return true
+   }
+
+   function exceedsCanvas(x, y){
+      return (x <= 159 && y <= 89) && (x >= 0 && y >= 0);
+   }
+
+   function boundaryFill(x, y){
+      if (!exceedsCanvas(x,y)) return;
+      if (!isPixelPainted(x,y)){
+         pixel(x, y, 'red');
+         boundaryFill(x + 1, y);
+         boundaryFill(x -1, y);
+         boundaryFill(x, y + 1);
+         boundaryFill(x, y - 1);
+      }
+   }
+
+   function initializeBoundary(e){
+      let mousePos = getMousePos(canvas, e);
+      boundaryFill(Math.floor(mousePos.x), Math.floor(mousePos.y));
+   }
+
    function confirmOperation(e){
       if (radio.value == 'Polygon') {
          polygon(e)
@@ -348,6 +372,9 @@ window.addEventListener('load',() => {
       }
       else if (radio.value == 'Resize') {
          canvas.addEventListener("click", resize(e))
+      }
+      else if (radio.value == 'Boundary') {
+         canvas.addEventListener("click", initializeBoundary(e))
       }
    }
    function clearCanvas(e){
