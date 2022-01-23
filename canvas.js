@@ -19,6 +19,7 @@ window.addEventListener('load',() => {
    lastPolygon.edges = [];
    lastPolygon.extremities;
    lastPolygon.vertices = [];
+   var newLastPolygon = []
    var i = 0
 
    ctx.canvas.width  = 16*size;
@@ -209,6 +210,45 @@ window.addEventListener('load',() => {
 
    }
 
+   function runScale(e){
+      let point = getMousePos(canvas, e);
+      scale(point)
+   }
+
+   function scale(fixedPoint){
+      deletePolygon()
+      let x0 = fixedPoint.x
+      let y0 = fixedPoint.y
+      let scaleX = document.getElementById('xScale').value
+      let scaleY = document.getElementById('yScale').value
+      matrix = [[scaleX, 0], [0, scaleY]]
+      for(let i = 0; i < lastPolygon.vertices.length; i++){
+         let newPoint = [0,0]
+         newPoint[0] = lastPolygon.vertices[i].x;
+         newPoint[1] = lastPolygon.vertices[i].y;
+         newPoint[0] -= x0;
+         newPoint[1] -= y0;
+         newLastPolygon.push(newPoint)
+      }
+
+      let scaledCoordinates = math.multiply(newLastPolygon, matrix);
+
+      newLastPolygon = []
+      
+      scaledCoordinates = math.concat(
+        math.add(math.column(scaledCoordinates, 0), x0),
+        math.add(math.column(scaledCoordinates, 1), y0),
+        1
+      );
+
+      for (let i = 0; i < scaledCoordinates.length; i++) {
+         let previousPoint = scaledCoordinates[i];
+         let nextPoint = scaledCoordinates[(i + 1) % scaledCoordinates.length];
+         line(Math.floor(previousPoint[0]), Math.floor(previousPoint[1]), Math.floor(nextPoint[0]), Math.floor(nextPoint[1]));
+      }
+
+   }
+
    function pixel(x,y,color='black'){
       ctx.fillStyle = color
       ctx.fillRect(Math.floor(x), Math.floor(y), 1, 1)
@@ -309,6 +349,20 @@ window.addEventListener('load',() => {
       return points[0]
    }
 
+   function initializeBoundary(e){
+      let mousePos = getMousePos(canvas, e);
+      boundaryFill(Math.floor(mousePos.x), Math.floor(mousePos.y));
+   }
+
+   function confirmOperation(e){
+      if (radio.value == 'Polygon') {
+         polygon(e)
+      }
+      else if(radio.value == 'Curve') {
+         curve(e)
+      }
+   }
+
    function isPixelPainted(x, y){
       let data = ctx.getImageData(x, y, 1, 1).data
       if (data[3] !== 0) return true
@@ -326,20 +380,6 @@ window.addEventListener('load',() => {
          boundaryFill(x -1, y);
          boundaryFill(x, y + 1);
          boundaryFill(x, y - 1);
-      }
-   }
-
-   function initializeBoundary(e){
-      let mousePos = getMousePos(canvas, e);
-      boundaryFill(Math.floor(mousePos.x), Math.floor(mousePos.y));
-   }
-
-   function confirmOperation(e){
-      if (radio.value == 'Polygon') {
-         polygon(e)
-      }
-      else if(radio.value == 'Curve') {
-         curve(e)
       }
    }
 
@@ -375,6 +415,9 @@ window.addEventListener('load',() => {
       }
       else if (radio.value == 'Boundary') {
          canvas.addEventListener("click", initializeBoundary(e))
+      }
+      else if (radio.value == 'Scale') {
+         canvas.addEventListener("click", runScale(e))
       }
    }
    function clearCanvas(e){
