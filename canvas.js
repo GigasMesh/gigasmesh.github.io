@@ -252,7 +252,6 @@ window.addEventListener('load',() => {
    }
 
    function runRotation(e){
-      deletePolygon()
       let x0 = lastPolygon.vertices[0].x
       let y0 = lastPolygon.vertices[0].y
       let rotDegree = document.getElementById('rotDegree').value
@@ -282,8 +281,8 @@ window.addEventListener('load',() => {
          points.push(previousPoint)
          points.push(nextPoint)
       }
+      deletePolygon()
       polygon();
-      points = []
    }
 
 
