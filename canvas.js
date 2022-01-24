@@ -1,18 +1,18 @@
 const canvas = document.querySelector("#canvas");
 const ctx = canvas.getContext("2d");
 const clearBtn = document.querySelector("#btn-clear")
-const confirmBtn = document.querySelector("#btn-confirm")
+const confirmBtn = document.querySelector("#btn-confirm") 
 const size = 10;
 
 let radio = document.querySelector('input[type=radio]:checked');
 
 
-window.addEventListener('load',() => {
 
+window.addEventListener('load',() => {
    confirmBtn.addEventListener('click',confirmOperation);
    clearBtn.addEventListener('click',clearCanvas);
    canvas.addEventListener("click", handleFunction);
-
+   window.addEventListener("click", newHandleFunction);
    var points = [];
    var markupPoints = [];
    var lastPolygon = Object(); //salva o ultimo poligono e suas arestas
@@ -21,15 +21,15 @@ window.addEventListener('load',() => {
    lastPolygon.vertices = [];
    var newLastPolygon = []
    var i = 0
-
    ctx.canvas.width  = 16*size;
    ctx.canvas.height = 9*size;
+   window.width = 16*size;
+   window.height = 9*size
 
    function  getMousePos(canvas, evt) {
       const rect = canvas.getBoundingClientRect(), // abs. size of element
           scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for X
           scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for Y
-
       return {
          x: (evt.clientX - rect.left) * scaleX  ,   // scale mouse coordinates after they have
          y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
@@ -39,6 +39,7 @@ window.addEventListener('load',() => {
    function drawPixel(e){
       var mousePos = getMousePos(canvas,e);
       pixel(mousePos.x,mousePos.y)
+      console.log(mousePos.x,mousePos.y)
    }
 
    function eraser(e) {
@@ -361,6 +362,11 @@ window.addEventListener('load',() => {
       else if(radio.value == 'Curve') {
          curve(e)
       }
+      else if(radio.value == 'LineCrop') {
+         var i = points.slice(1)
+         points = i
+         polygon()
+      }
    }
 
    function isPixelPainted(x, y){
@@ -381,6 +387,26 @@ window.addEventListener('load',() => {
          boundaryFill(x, y + 1);
          boundaryFill(x, y - 1);
       }
+   }
+   
+   function crop(e){
+      console.log('chegou no crop')
+      point = GetWindowMousePos(e)
+      points.push(point)
+      drawInitialPixel(point.x, point.y) 
+      console.log(point)
+   }
+
+   function GetWindowMousePos(e){
+      console.log('chegou no get')
+      const winrect = canvas.getBoundingClientRect()
+         var windowEvent = window.event;
+         winscaleX = window.width / winrect.width,    // relationship bitmap vs. element for X
+         winscaleY = window.height / winrect.height;
+         return{
+            x: (windowEvent.clientX - winrect.left)*winscaleX, 
+            y: (windowEvent.clientY - winrect.top)*winscaleY
+         }
    }
 
    function handleFunction(e){
@@ -418,6 +444,12 @@ window.addEventListener('load',() => {
       }
       else if (radio.value == 'Scale') {
          canvas.addEventListener("click", runScale(e))
+      }
+   }
+   function newHandleFunction(e){
+      radio = document.querySelector('input[type=radio]:checked');
+      if (radio.value == 'LineCrop') {
+         canvas.addEventListener("click", crop(e));
       }
    }
    function clearCanvas(e){
