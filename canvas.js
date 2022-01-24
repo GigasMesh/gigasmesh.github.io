@@ -206,7 +206,7 @@ window.addEventListener('load',() => {
       var deltaY = document.getElementById('yScale').value
       for(let i = 0; i < lastPolygon.vertices.length; i++){
          lastPolygon.vertices[i].x += Math.floor(deltaX)
-         lastPolygon.vertices[i].y += Math.floor(deltaY)
+         lastPolygon.vertices[i].y -= Math.floor(deltaY)
       }
       points = lastPolygon.vertices
       polygon()

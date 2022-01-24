@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.7/css/all.css">
         <link rel="stylesheet" href="style.css">
         <script src="https://unpkg.com/mathjs@10.1.0/lib/browser/math.js"></script>
-        <title>a</title>
+        <title>8bitArt</title>
     </head>
 
     <body>
@@ -32,6 +32,7 @@
             <div class="col-auto" id="btn-bar">
                 <div class="col-auto">
                     <div class="btn-group-vertical" data-toggle="buttons">
+                        <label>Desenho</label>
                         <label class="btn btn-secondary active">
                             <input class="hidden" type="radio" name="tools" value="Pixel" autocomplete="off" checked> Pixel
                         </label>
@@ -42,28 +43,31 @@
                             <input class="hidden" type="radio" name="tools" value="Circle" autocomplete="off"> Circle
                         </label>
                         <label class="btn btn-secondary">
-                            <input class="hidden" type="radio" name="tools" value="Polygon" autocomplete="off"> Polygon
-                        </label>
-                        <label class="btn btn-secondary">
                             <input class="hidden" type="radio" name="tools" value="Curve" autocomplete="off"> Curve
                         </label>
                         <label class="btn btn-secondary">
-                            <input class="hidden" type="radio" name="tools" value="Scanline" autocomplete="off"> Scanline
+                            <input class="hidden" type="radio" name="tools" value="Polygon" autocomplete="off"> Polygon
                         </label>
+                        <label>Preenchimento</label>
                         <label class="btn btn-secondary">
-                            <input class="hidden" type="radio" name="tools" value="Replace" autocomplete="off"> Replace
+                            <input class="hidden" type="radio" value="Scanline" autocomplete="off"> Scanline
                         </label>
                         <label class="btn btn-secondary">
                             <input class="hidden" type="radio" name="tools" value="Boundary"  autocomplete="off"> Boundary
+                        </label>
+                        <label>Transformação</label>
+                        <label class="btn btn-secondary">
+                            <input class="hidden" type="radio" name="tools" value="Replace" autocomplete="off"> Replace
                         </label>
                         <label class="btn btn-secondary">
                             <input class="hidden" type="radio" name="tools" value="Scale"  autocomplete="off"> Scale
                         </label>
                         <label class="btn btn-secondary">
-                            <input class="hidden" type="radio" name="tools" value="LineCrop"  autocomplete="off"> LineCrop
-                        </label>
-                        <label class="btn btn-secondary">
                             <input class="hidden" type="radio" name="tools" value="Rotate"  autocomplete="off"> Rotate
+                        </label>
+                        <label>Ferramentas</label>
+                        <label class="btn btn-secondary">
+                            <input class="hidden" type="radio" name="tools" value="LineCrop"  autocomplete="off"> LineCrop
                         </label>
                         <label class="btn btn-secondary">
                             <input class="hidden" type="radio" name="tools" value="Eraser"  autocomplete="off"> Eraser
