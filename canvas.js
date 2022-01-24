@@ -195,12 +195,12 @@ window.addEventListener('load',() => {
    function deletePolygon(){
       for(let i = 0; i < lastPolygon.edges.length; i++){
          for(let j = 0; j < lastPolygon.edges[i].length; j++){
-            pixel(lastPolygon.edges[i][j].x,lastPolygon.edges[i][j].y,'white')
+            deletePixel(lastPolygon.edges[i][j].x,lastPolygon.edges[i][j].y)
          }
       }
    }
    
-   function replace(e){
+   function replace(){
       deletePolygon()
       for(let i = 0; i < lastPolygon.vertices.length; i++){
          lastPolygon.vertices[i].x += -2
@@ -208,7 +208,6 @@ window.addEventListener('load',() => {
       }
       points = lastPolygon.vertices
       polygon()
-
    }
 
    function runScale(e){
@@ -250,7 +249,6 @@ window.addEventListener('load',() => {
       }
       deletePolygon()
       polygon()
-      points = []
    }
 
    function runRotation(){
