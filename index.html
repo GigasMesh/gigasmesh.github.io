@@ -22,6 +22,10 @@
             <label class="form-label">Escala Y</label>
             <input type="range" id="yScale" class="form-range" min="1" max="10" step="1" value="2">
         </div>
+        <div class="col-auto">
+            <label class="form-label">Grau de Rotação</label>
+            <input type="range" id="rotDegree" class="form-range" min="10" max="360" step="10" value="45">
+        </div>
     </div>
     <div class="container">
         <div class="row">
@@ -60,6 +64,9 @@
                         </label>
                         <label class="btn btn-secondary">
                             <input class="hidden" type="radio" name="tools" value="LineCrop"  autocomplete="off"> LineCrop
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input class="hidden" type="radio" name="tools" value="Rotate"  autocomplete="off"> Rotate
                         </label>
                         <label class="btn btn-secondary">
                             <input class="hidden" type="radio" name="tools" value="Eraser"  autocomplete="off"> Eraser

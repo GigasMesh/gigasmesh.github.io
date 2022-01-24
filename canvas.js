@@ -57,7 +57,7 @@ window.addEventListener('load',() => {
       var edge = []
       while(true) {
          ctx.fillRect(x0, y0, 1,1);
-         if ((radio.value == 'Polygon') || (radio.value == 'Replace')){
+         if ((radio.value == 'Polygon') || (radio.value == 'Replace') || (radio.value == 'Rotate') || (radio.value == 'Scale')){
             var point = new Object()
             point.x = x0
             point.y = y0
@@ -217,7 +217,6 @@ window.addEventListener('load',() => {
    }
 
    function scale(fixedPoint){
-      deletePolygon()
       let x0 = fixedPoint.x
       let y0 = fixedPoint.y
       let scaleX = document.getElementById('xScale').value
@@ -243,12 +242,52 @@ window.addEventListener('load',() => {
       );
 
       for (let i = 0; i < scaledCoordinates.length; i++) {
-         let previousPoint = scaledCoordinates[i];
-         let nextPoint = scaledCoordinates[(i + 1) % scaledCoordinates.length];
-         line(Math.floor(previousPoint[0]), Math.floor(previousPoint[1]), Math.floor(nextPoint[0]), Math.floor(nextPoint[1]));
+         let previousPoint = {x: scaledCoordinates[i][0], y: scaledCoordinates[i][1]}
+         let nextPoint = {x: scaledCoordinates[(i + 1) % scaledCoordinates.length][0], 
+            y: scaledCoordinates[(i + 1) % scaledCoordinates.length][1]}
+         points.push(previousPoint)
+         points.push(nextPoint)
+      }
+      deletePolygon()
+      polygon()
+      points = []
+   }
+
+   function runRotation(){
+      deletePolygon()
+      let x0 = lastPolygon.vertices[0].x
+      let y0 = lastPolygon.vertices[0].y
+      let rotDegree = document.getElementById('rotDegree').value
+      rotDegree *= 0.0174533
+      matrix = [
+         [Math.cos(rotDegree), -Math.sin(rotDegree)],
+         [Math.sin(rotDegree),  Math.cos(rotDegree)]
+     ];
+      for(let i = 0; i < lastPolygon.vertices.length; i++){
+         newLastPolygon.push([lastPolygon.vertices[i].x - x0, lastPolygon.vertices[i].y - y0])
       }
 
+      let scaledCoordinates = math.multiply(newLastPolygon, matrix);
+
+      newLastPolygon = []
+      
+      scaledCoordinates = math.concat(
+        math.add(math.column(scaledCoordinates, 0), x0),
+        math.add(math.column(scaledCoordinates, 1), y0),
+        1
+      );
+
+      for (let i = 0; i < scaledCoordinates.length; i++) {
+         let previousPoint = {x: Math.round(scaledCoordinates[i][0]), y: Math.round(scaledCoordinates[i][1])}
+         let nextPoint = {x: Math.round(scaledCoordinates[(i + 1) % scaledCoordinates.length][0]), 
+            y: Math.round(scaledCoordinates[(i + 1) % scaledCoordinates.length][1])}
+         points.push(previousPoint)
+         points.push(nextPoint)
+      }
+      polygon();
+      points = []
    }
+
 
    function pixel(x,y,color='black'){
       ctx.fillStyle = color
@@ -444,6 +483,9 @@ window.addEventListener('load',() => {
       }
       else if (radio.value == 'Scale') {
          canvas.addEventListener("click", runScale(e))
+      }
+      else if (radio.value == 'Rotate') {
+         canvas.addEventListener("click", runRotation)
       }
    }
    function newHandleFunction(e){
