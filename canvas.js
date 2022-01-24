@@ -251,7 +251,7 @@ window.addEventListener('load',() => {
       polygon()
    }
 
-   function runRotation(){
+   function runRotation(e){
       deletePolygon()
       let x0 = lastPolygon.vertices[0].x
       let y0 = lastPolygon.vertices[0].y
@@ -483,7 +483,7 @@ window.addEventListener('load',() => {
          canvas.addEventListener("click", runScale(e))
       }
       else if (radio.value == 'Rotate') {
-         canvas.addEventListener("click", runRotation)
+         canvas.addEventListener("click", runRotation(e))
       }
    }
    function newHandleFunction(e){
