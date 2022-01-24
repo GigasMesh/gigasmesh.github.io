@@ -202,9 +202,11 @@ window.addEventListener('load',() => {
    
    function replace(){
       deletePolygon()
+      var deltaX = document.getElementById('xScale').value
+      var deltaY = document.getElementById('yScale').value
       for(let i = 0; i < lastPolygon.vertices.length; i++){
-         lastPolygon.vertices[i].x += -2
-         lastPolygon.vertices[i].y += -2
+         lastPolygon.vertices[i].x += Math.floor(deltaX)
+         lastPolygon.vertices[i].y += Math.floor(deltaY)
       }
       points = lastPolygon.vertices
       polygon()
@@ -280,6 +282,7 @@ window.addEventListener('load',() => {
             y: Math.round(scaledCoordinates[(i + 1) % scaledCoordinates.length][1])}
          points.push(previousPoint)
          points.push(nextPoint)
+         console.log('points: ',points)
       }
       deletePolygon()
       polygon();
@@ -471,9 +474,6 @@ window.addEventListener('load',() => {
       }
       else if (radio.value == 'Replace') {
          canvas.addEventListener("click", replace(e))
-      }
-      else if (radio.value == 'Resize') {
-         canvas.addEventListener("click", resize(e))
       }
       else if (radio.value == 'Boundary') {
          canvas.addEventListener("click", initializeBoundary(e))
